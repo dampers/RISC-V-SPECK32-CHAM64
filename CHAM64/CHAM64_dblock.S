@@ -171,20 +171,20 @@ t6 : 0x00010001
 CHAM64_dblock:
 
 
-	lh		a3, 0(a0)
-	lh		a4, 2(a0)
-	lh		a5, 4(a0)
-	lh		a6, 6(a0)
+	lhu		a3, 0(a0)
+	lhu		a4, 2(a0)
+	lhu		a5, 4(a0)
+	lhu		a6, 6(a0)
 
 	slli	a3, a3, 16
 	slli	a4, a4, 16
 	slli	a5, a5, 16
 	slli 	a6, a6, 16
 
-	lh		t1,	8(a0)
-	lh		t2, 10(a0)
-	lh		t3, 12(a0)
-	lh		t4, 14(a0)
+	lhu		t1,	8(a0)
+	lhu		t2, 10(a0)
+	lhu		t3, 12(a0)
+	lhu		t4, 14(a0)
 
 	xor		a3, a3, t1
 	xor		a4, a4, t2

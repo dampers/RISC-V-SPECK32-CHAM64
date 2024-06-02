@@ -78,14 +78,14 @@ t6 : 0x00010000		// for addition
 SPECK32_dblock:
 
 
-	lh		a3, 0(a0)
-	lh		a4, 2(a0)
+	lhu		a3, 0(a0)
+	lhu		a4, 2(a0)
 
 	slli	a3, a3, 16
 	slli	a4, a4, 16
 
-	lh		t1,	4(a0)
-	lh		t2, 6(a0)
+	lhu		t1,	4(a0)
+	lhu		t2, 6(a0)
 
 	xor		a3, a3, t1
 	xor		a4, a4, t2
