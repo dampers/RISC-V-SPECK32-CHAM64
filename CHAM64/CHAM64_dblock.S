@@ -27,13 +27,32 @@ a5 x2
 a6 x3
 a7 : tmp
 
-t0 : 64
 t1 : rc
 t2 : 0xfffefffe
-t3 : rk
 t4 : 0x00ff00ff
 t5 : 0x00010000
 t6 : 0x00010001
+
+t0
+t3
+
+s0
+s1
+s2
+s3
+s4
+s5
+s6
+s7
+s8
+s9
+s10
+s11
+
+ra(x1)
+a2
+
+
 
 */
 
@@ -63,26 +82,23 @@ t6 : 0x00010001
 .endm
 
 
-.macro INIT_EVEN_ROUND A, B
+.macro INIT_EVEN_ROUND A, B, RK
 	// a0 = ROL16(B, 1)
 	ROL1 \B, a0, a7, a0
 
 	// rk
-	lw		t3, 0(a2)		// t3 = rk[0]
-	xor		a0, a0 ,t3		// a0 = a0 ^ t3
-	addi	a2, a2, 4		// a2 += 4
+	xor		a0, a0 ,\RK		// a0 = a0 ^ t3
 
 	ADDITION \A, a0, a7, \A
 .endm
 
-.macro INIT_ODD_ROUND A, B
+.macro INIT_ODD_ROUND A, B, RK
 	// a0 = ROL16(B, 8)
 	ROL8 \B, a0, a7, a0
 
 	// rk
-	lw		t3, 0(a2)		// s1 = rk[0]
-	xor		a0, a0 ,t3		// a0 = a0 ^ t3
-	addi	a2, a2, 4		// a2 += 4
+	xor		a0, a0, \RK		// a0 = a0 ^ t3
+
 	// xor rc
 	xor		\A, \A, t1		// A ^= rc
 
@@ -91,14 +107,13 @@ t6 : 0x00010001
 	ROL1	\A, a0, a7, \A
 .endm
 
-.macro SECOND_ROUND A, B
+.macro SECOND_ROUND A, B, RK
 	// a0 = ROL16(B, 1)
 	ROL1 \B, a0, a7, a0
 
 	// rk
-	lw		t3, 0(a2)		// t3 = rk[0]
-	xor		a0, a0 ,t3		// a0 = a0 ^ t3
-	addi	a2, a2, 4		// a2 += 4
+	xor		a0, a0, \RK		// a0 = a0 ^ t3
+
 	// xor rc
 	add		t1, t1, t6		// rc += 0x00010001
 	xor		\A, \A, t1		// A ^= rc
@@ -107,7 +122,7 @@ t6 : 0x00010001
 .endm
 
 
-.macro EVEN_ROUND A, B
+.macro EVEN_ROUND A, B, RK
 
 	// A = ROL16(A, 8)
 	ROL8	\A, a0, a7, \A
@@ -115,9 +130,7 @@ t6 : 0x00010001
 	ROL1	\B, a0, a7, a0
 
 	// rk
-	lw		t3, 0(a2)		// t3 = rk[0]
-	xor		a0, a0 ,t3		// a0 = a0 ^ t3
-	addi	a2, a2, 4		// a2 += 4
+	xor		a0, a0, \RK		// a0 = a0 ^ t3
 	// xor rc
 	add		t1, t1, t6		// rc += 0x00010001
 	xor		\A, \A, t1		// A ^= rc
@@ -126,12 +139,11 @@ t6 : 0x00010001
 	ADDITION \A, a0, a7, \A
 .endm
 
-.macro ODD_ROUND A, B
+.macro ODD_ROUND A, B, RK
 
 	// rk
-	lw		t3, 0(a2)		// t3 = rk[0]
-	xor		a0, \B, t3		// a0 = B ^ t3
-	addi	a2, a2, 4		// a2 += 4
+	xor		a0, \B, \RK		// a0 = B ^ t3
+
 	// xor rc
 	add		t1, t1, t6		// rc += 0x00010001
 	xor		\A, \A, t1		// A ^= rc
@@ -141,30 +153,60 @@ t6 : 0x00010001
 	ROL1	\A, a0, a7, \A
 .endm
 
+.macro LOAD_RK
+	lw		t0, 0(a2)
+	lw		t3, 4(a2)
+	lw		x1, 8(a2)
+	lw		s0, 12(a2)
+	lw		s1, 16(a2)
+	lw		s2, 20(a2)
+	lw		s3, 24(a2)
+	lw		s4, 28(a2)
 
+	lw		s5, 32(a2)
+	lw		s6, 36(a2)
+	lw		s7, 40(a2)
+	lw		s8, 44(a2)
+	lw		s9, 48(a2)
+	lw		s10,52(a2)
+	lw		s11,56(a2)
+	lw		a2, 60(a2)
+.endm
 
 .macro INIT_8ROUNDS A, B, C, D
-	INIT_EVEN_ROUND \A, \B		// round 0
-	INIT_ODD_ROUND	\B, \C		// round 1
-	SECOND_ROUND	\C, \D	 	// round 2
-	ODD_ROUND		\D, \A		// round 3
+	INIT_EVEN_ROUND \A, \B, t0		// round 0   0
+	INIT_ODD_ROUND	\B, \C, t3		// round 1   1
+	SECOND_ROUND	\C, \D, x1	 	// round 2   0
+	ODD_ROUND		\D, \A, s0		// round 3   0
 
-	EVEN_ROUND		\A, \B	 	// round 4
-	ODD_ROUND		\B, \C		// round 5
-	EVEN_ROUND		\C, \D	 	// round 6
-	ODD_ROUND		\D, \A		// round 7
+	EVEN_ROUND		\A, \B, s1	 	// round 4   1
+	ODD_ROUND		\B, \C, s2		// round 5   0
+	EVEN_ROUND		\C, \D, s3	 	// round 6   1
+	ODD_ROUND		\D, \A, s4		// round 7   0
+.endm
+
+.macro FIRST_8ROUNDS A, B, C, D
+	EVEN_ROUND 		\A, \B, t0		// round 0   0
+	ODD_ROUND		\B, \C, t3		// round 1   1
+	EVEN_ROUND		\C, \D, x1	 	// round 2   0
+	ODD_ROUND		\D, \A, s0		// round 3   0
+
+	EVEN_ROUND		\A, \B, s1	 	// round 4   1
+	ODD_ROUND		\B, \C, s2		// round 5   0
+	EVEN_ROUND		\C, \D, s3	 	// round 6   1
+	ODD_ROUND		\D, \A, s4		// round 7   0
 .endm
 
 .macro EIGHT_ROUNDS A, B, C, D
-	EVEN_ROUND		\A, \B	 	// round 8
-	ODD_ROUND		\B, \C		// round 9
-	EVEN_ROUND		\C, \D	 	// round 10
-	ODD_ROUND		\D, \A		// round 11
+	EVEN_ROUND		\A, \B, s5	 	// round 8
+	ODD_ROUND		\B, \C, s6		// round 9
+	EVEN_ROUND		\C, \D, s7	 	// round 10
+	ODD_ROUND		\D, \A, s8		// round 11
 
-	EVEN_ROUND		\A, \B	 	// round 12
-	ODD_ROUND		\B, \C		// round 13
-	EVEN_ROUND		\C, \D	 	// round 14
-	ODD_ROUND		\D, \A		// round 15
+	EVEN_ROUND		\A, \B, s9	 	// round 12
+	ODD_ROUND		\B, \C, s10		// round 13
+	EVEN_ROUND		\C, \D, s11	 	// round 14
+	ODD_ROUND		\D, \A, a2		// round 15
 .endm
 
 
@@ -191,29 +233,45 @@ CHAM64_dblock:
 	xor		a5, a5, t3
 	xor		a6, a6, t4
 
+	addi	sp,	sp, -52
+	sw		x1, 48(sp)
+	sw		s0, 44(sp)
+	sw		s1, 40(sp)
+	sw		s2, 36(sp)
+	sw		s3, 32(sp)
+	sw		s4,	28(sp)
+	sw		s5,	24(sp)
+	sw		s6,	20(sp)
+	sw		s7,	16(sp)
+	sw		s8,	12(sp)
+	sw		s9,	8(sp)
+	sw		s10,4(sp)
+	sw		s11,0(sp)
+
 	li		t5, 0x00010000		// for add
 	li		t1, 0x00010001		// rc for round 1
 	li		t2, 0xfffefffe		// for ROL 1
 	li		t4, 0x00ff00ff		// for ROL 8
 	addi	t6, t5, 1			// for add rc and ROL 1
-	li		t0, 64				// for rk back
+
+	LOAD_RK
 
 	INIT_8ROUNDS	a3, a4, a5, a6
 	EIGHT_ROUNDS	a3, a4, a5, a6
-	sub		a2, a2, t0
+
+	FIRST_8ROUNDS	a3, a4, a5, a6
 	EIGHT_ROUNDS	a3, a4, a5, a6
+
+	FIRST_8ROUNDS	a3, a4, a5, a6
 	EIGHT_ROUNDS	a3, a4, a5, a6
-	sub		a2, a2, t0
+
+	FIRST_8ROUNDS	a3, a4, a5, a6
 	EIGHT_ROUNDS	a3, a4, a5, a6
+
+	FIRST_8ROUNDS	a3, a4, a5, a6
 	EIGHT_ROUNDS	a3, a4, a5, a6
-	sub		a2, a2, t0
-	EIGHT_ROUNDS	a3, a4, a5, a6
-	EIGHT_ROUNDS	a3, a4, a5, a6
-	sub		a2, a2, t0
-	EIGHT_ROUNDS	a3, a4, a5, a6
-	EIGHT_ROUNDS	a3, a4, a5, a6
-	sub		a2, a2, t0
-	EIGHT_ROUNDS	a3, a4, a5, a6
+
+	FIRST_8ROUNDS	a3, a4, a5, a6
 
 
 	ROL8	a3, a0, a7, a3
@@ -234,8 +292,20 @@ CHAM64_dblock:
 	sh		a5, 4(a1)
 	sh		a6, 6(a1)
 
+	lw		ra, 48(sp)
+	lw		s0, 44(sp)
+	lw		s1, 40(sp)
+	lw		s2, 36(sp)
+	lw		s3, 32(sp)
+	lw		s4,	28(sp)
+	lw		s5,	24(sp)
+	lw		s6,	20(sp)
+	lw		s7,	16(sp)
+	lw		s8,	12(sp)
+	lw		s9,	8(sp)
+	lw		s10,4(sp)
+	lw		s11,0(sp)
+	addi	sp,	sp, 52
+
 
 	ret
-
-
-
