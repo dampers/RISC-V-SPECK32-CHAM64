@@ -27,7 +27,6 @@ a5 : rk
 a6 : tmp
 a7 : tmp
 
-t1 : tmp
 t2 : 0x3fff3fff		// for ROL 2
 t3 : 0xc000c000		// for ROL 2
 t4 : 0x007f007f		// for ROR 7
@@ -82,11 +81,11 @@ SPECK32_dblock:
 	slli	a3, a3, 16
 	slli	a4, a4, 16
 
-	lhu		t1,	4(a0)
-	lhu		t2, 6(a0)
+	lhu		t6,	4(a0)
+	lhu		t7, 6(a0)
 
-	xor		a3, a3, t1
-	xor		a4, a4, t2
+	xor		a3, a3, t6
+	xor		a4, a4, t7
 
 
 	li		t2, 0x3fff3fff		// for ROL 2
