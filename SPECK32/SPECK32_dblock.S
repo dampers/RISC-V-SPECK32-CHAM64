@@ -18,7 +18,7 @@
 
 /*
 REGIStER
-a0 pt
+a0 pt pointer
 a1 ct pointer
 a2 rk pointer
 a3 x1
@@ -66,9 +66,7 @@ t6 : 0x00010000		// for addition
 	ADDITION	\A, \B, a6, \A		// A = A + B
 	ROL2		\B, a6, a7, \B		// B = rol16(B, 2)
 
-	lw			a5, 0(a2)			// a5 = rk[0]
 	xor			\A, \A, a5			// A = A ^ rk[0]
-	addi		a2, a2, 4			// rk += 4
 
 	xor			\B, \B, \A			// B = B ^ A
 
@@ -100,30 +98,51 @@ SPECK32_dblock:
 	li		t6, 0x00010000		// for addition
 
 
-
+	lw		a5, 0(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 4(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 8(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 12(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 16(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 20(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 24(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 28(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 32(a2)
 	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
-	SPECK_ROUND a4, a3
+	lw		a5, 36(a2)
 	SPECK_ROUND a4, a3
 
+	lw		a5, 40(a2)
 	SPECK_ROUND a4, a3
+	lw		a5, 44(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 48(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 52(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 56(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 60(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 64(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 68(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 72(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 76(a2)
+	SPECK_ROUND a4, a3
+
+	lw		a5, 80(a2)
+	SPECK_ROUND a4, a3
+	lw		a5, 84(a2)
 	SPECK_ROUND a4, a3
 
 
